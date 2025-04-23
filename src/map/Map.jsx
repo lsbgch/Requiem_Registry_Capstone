@@ -206,12 +206,25 @@ export default function Map() {
     }
   };
 
-  const deletePlot = () => {
-    setPlotLists(prev => ({
-      ...prev,
-      [selectedCemetery]: prev[selectedCemetery].filter(p => p.id !== selectedPlot.id)
-    }));
-    setSelectedPlot(null);
+  const deletePlot = async () => {
+    if (!selectedPlot) return;
+  
+    const { error } = await supabaseClient
+      .from("rr_plot")
+      .delete()
+      .eq("plot_number", selectedPlot.id)
+      .eq("ceme_id", selectedCemetery); // Ensure correct cemetery context
+  
+    if (error) {
+      console.error("Error deleting plot:", error);
+      alert("Failed to delete plot.");
+    } else {
+      setPlotLists(prev => ({
+        ...prev,
+        [selectedCemetery]: prev[selectedCemetery].filter(p => p.id !== selectedPlot.id)
+      }));
+      setSelectedPlot(null);
+    }
   };
 
   const handleCemeteryChange = (e) => {
